@@ -1,5 +1,6 @@
 ### 1. Tạo sản phẩm mới
 POST http://localhost:8080/api/v1/products
+
 Content-Type: application/json
 
 {
@@ -11,3 +12,29 @@ Content-Type: application/json
 
 ### 2. Lấy danh sách sản phẩm
 GET http://localhost:8080/api/v1/products
+DELETE http://localhost:8080/api/v1/products/1
+### 3. Đăng ký tài khoản
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@gmail.com",
+  "password": "matkhau123",
+  "full_name": "Nguyen Van Test"
+}
+
+### 4. Đăng nhập
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@gmail.com",
+  "password": "matkhau123"
+}
+### Test 1: Xóa sản phẩm khi KHÔNG có Token (Sẽ bị chặn)
+DELETE http://localhost:8080/api/v1/products/1
+
+### Test 2: Xóa sản phẩm khi CÓ Token (Sẽ bị chặn vì là Customer)
+
+DELETE http://localhost:8080/api/v1/products/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTI2NDQ4MjEsInJvbGUiOiJhZG1pbiIsInVzZXJfaWQiOjF9.XLAjyMaLHq6bf301CEpBX4DtD2E0FkS_pd3UrigkjNc

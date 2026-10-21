@@ -4,14 +4,14 @@ import (
 	"log"
 	"os"
 
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"go-ecommerce/internal/handler"
+	"go-ecommerce/internal/middleware"
 	"go-ecommerce/internal/model"
 	"go-ecommerce/internal/repository"
 	"go-ecommerce/internal/service"
 	"go-ecommerce/pkg/database"
-
-	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -26,21 +26,41 @@ func main() {
 	}
 	log.Println("✅ Migrate thành công")
 
+	// Khởi tạo Product
 	productRepo := repository.NewProductRepository(database.DB)
 	productSvc := service.NewProductService(productRepo)
 	productHandler := handler.NewProductHandler(productSvc)
+
+	// Khởi tạo Auth
+	userRepo := repository.NewUserRepository(database.DB)
+	authSvc := service.NewAuthService(userRepo)
+	authHandler := handler.NewAuthHandler(authSvc)
 
 	r := gin.Default()
 
 	api := r.Group("/api/v1")
 	{
+		// Auth Routes
+		auth := api.Group("/auth")
+		{
+			auth.POST("/register", authHandler.Register)
+			auth.POST("/login", authHandler.Login)
+		}
+
+		// Product Routes
 		products := api.Group("/products")
 		{
 			products.GET("", productHandler.GetAll)
 			products.GET("/:id", productHandler.GetByID)
-			products.POST("", productHandler.Create)
-			products.PUT("/:id", productHandler.Update)
-			products.DELETE("/:id", productHandler.Delete)
+
+			// Các route cần bảo vệ (Phải có Token và là Admin)
+			adminRoutes := products.Group("")
+			adminRoutes.Use(middleware.AuthMiddleware(), middleware.AdminOnly())
+			{
+				adminRoutes.POST("", productHandler.Create)
+				adminRoutes.PUT("/:id", productHandler.Update)
+				adminRoutes.DELETE("/:id", productHandler.Delete)
+			}
 		}
 	}
 
